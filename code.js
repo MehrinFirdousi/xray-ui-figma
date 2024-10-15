@@ -1,5 +1,14 @@
 // Display the UI
-figma.showUI(__html__, { width: 300, height: 220 });
+figma.showUI(__html__, { width: 300, height: 350 });
+
+// Define a type for the element keywords and their mapping
+const elementKeywords = {
+  input: ["input", "field", "text", "textarea"],
+  button: ["button"],
+  radio: ["radio"],
+  checkbox: ["checkbox"],
+  slider: ["slider"]
+};
 
 // Listen for messages from the UI
 figma.ui.onmessage = (msg) => {
@@ -7,77 +16,51 @@ figma.ui.onmessage = (msg) => {
     // Get the current selection
     const selection = figma.currentPage.selection;
     let frameCount = 0;
-    let inputFieldCount = 0;
-    let buttonFieldCount = 0;
+
+    // Initialize elementCounts dynamically based on elementKeywords keys
+    const elementCounts = {};
+    for (const key in elementKeywords) {
+      elementCounts[key] = 0;
+    }
 
     // Loop through selected nodes and analyze them
     selection.forEach(node => {
       if (node.type === 'FRAME') {
         frameCount++;
-        inputFieldCount += countInputFields(node);
-        buttonFieldCount += countButtonFields(node);
+        for (const elementType in elementKeywords) {
+          elementCounts[elementType] += countElements(node, elementKeywords[elementType]);
+        }
       }
     });
 
+    // Prepare the result object dynamically from elementCounts
+    const result = { type: 'analysis-result', screens: frameCount };
+    for (const key in elementCounts) {
+      result[key] = elementCounts[key];
+    }
+
     // Send the result back to the UI
-    figma.ui.postMessage({ type: 'analysis-result', frames: frameCount, inputs: inputFieldCount, buttons: buttonFieldCount });
+    figma.ui.postMessage(result);
   }
 };
 
-// Helper function to count input fields in a frame by name
-function countInputFields(node) {
+// Generic function to count elements based on keywords
+function countElements(node, keywords) {
   let count = 0;
 
   if ("children" in node) {
     node.children.forEach(child => {
-      // Check if the layer name contains keywords related to input fields
-      if (child.name.toLowerCase().includes("input") || 
-          child.name.toLowerCase().includes("field") || 
-          child.name.toLowerCase().includes("text")) {
-        count++;
+      // Check if the layer name contains any of the keywords
+      for (const keyword of keywords) {
+        if (child.name.toLowerCase().includes(keyword)) {
+          count++;
+          break;
+        }
       }
       
       // Recursively check for nested components
       if ("children" in child) {
-        count += countInputFields(child);
-      }
-    });
-  }
-  return count;
-}
-
-function countButtonFields(node) {
-  let count = 0;
-
-  if ("children" in node) {
-    node.children.forEach(child => {
-      // Check if the layer name contains keywords related to input fields
-      if (child.name.toLowerCase().includes("button")) {
-        count++;
-      }
-      
-      // Recursively check for nested components
-      if ("children" in child) {
-        count += countButtonFields(child);
-      }
-    });
-  }
-  return count;
-}
-
-function countRadioFields(node) {
-  let count = 0;
-
-  if ("children" in node) {
-    node.children.forEach(child => {
-      // Check if the layer name contains keywords related to input fields
-      if (child.name.toLowerCase().includes("radio")) {
-        count++;
-      }
-      
-      // Recursively check for nested components
-      if ("children" in child) {
-        count += countRadioFields(child);
+        count += countElements(child, keywords);
       }
     });
   }

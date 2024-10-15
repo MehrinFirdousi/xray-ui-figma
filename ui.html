@@ -14,6 +14,11 @@
     #result { 
       margin-top: 16px; 
     }
+    .button-container {
+      display: flex;
+      justify-content: center; /* Center horizontally */
+      margin-top: 16px; /* Add some space above the button */
+    }
     #analyze {
       background-color: #4CAF50; /* Green background */
       color: white; /* White text */
@@ -22,6 +27,7 @@
       border-radius: 4px; /* Rounded corners */
       cursor: pointer; /* Pointer cursor on hover */
       font-size: 16px; /* Larger font size */
+      align-items: center;
     }
     #analyze:hover {
       background-color: #45a049; /* Darker green on hover */
@@ -29,8 +35,10 @@
   </style>
 </head>
 <body>
-  <h2>UI analyzer</h2>
-  <button id="analyze">Analyze Selected Frames</button>
+  <h2>UI Analyzer</h2>
+  <div class="button-container">
+    <button id="analyze">Analyze Selected Frames</button>
+  </div>
   <div id="result"></div>
   <script>
     // Function to send analyze frames message
@@ -40,20 +48,35 @@
 
     // Run analyzer on launch
     analyzeSelectedFrames();
-    
+
     // Send a message to the plugin code when the button is clicked
     document.getElementById('analyze').onclick = () => {
       analyzeSelectedFrames();
     };
 
-    // Receive and display the results
+    // Receive and display the results dynamically
     window.onmessage = event => {
       const message = event.data.pluginMessage;
       if (message.type === 'analysis-result') {
-        document.getElementById('result').innerText = 
-          `Screens: ${message.frames}\n Input Fields: ${message.inputs}\n Buttons: ${message.buttons}`;
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = ''; // Clear previous results
+
+        delete message.type;
+
+        // Loop through each key in the message and add a line to the result display
+        for (const key in message) {
+          const line = document.createElement('p');
+          line.textContent = `${capitalizeFirstLetter(key)}: ${message[key]}`;
+          resultDiv.appendChild(line);
+        }
       }
     };
+
+    // Utility function to capitalize the first letter of a string
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
   </script>
 </body>
 </html>
