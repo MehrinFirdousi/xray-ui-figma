@@ -2,7 +2,7 @@
 figma.showUI(__html__, { width: 300, height: 350 });
 
 // Define a type for the element keywords and their mapping
-const elementKeywords = {
+const uiElementKeywords = {
   input: ["input", "field", "text", "textarea"],
   button: ["button"],
   radio: ["radio"],
@@ -17,9 +17,9 @@ figma.ui.onmessage = (msg) => {
     const selection = figma.currentPage.selection;
     let frameCount = 0;
 
-    // Initialize elementCounts dynamically based on elementKeywords keys
+    // Initialize elementCounts dynamically based on uiElementKeywords keys
     const elementCounts = {};
-    for (const key in elementKeywords) {
+    for (const key in uiElementKeywords) {
       elementCounts[key] = 0;
     }
 
@@ -27,8 +27,8 @@ figma.ui.onmessage = (msg) => {
     selection.forEach(node => {
       if (node.type === 'FRAME') {
         frameCount++;
-        for (const elementType in elementKeywords) {
-          elementCounts[elementType] += countElements(node, elementKeywords[elementType]);
+        for (const elementType in uiElementKeywords) {
+          elementCounts[elementType] += countElements(node, uiElementKeywords[elementType]);
         }
       }
     });
