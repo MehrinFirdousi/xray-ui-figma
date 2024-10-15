@@ -1,0 +1,59 @@
+<!-- ui.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>X-ray UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif; 
+      padding: 16px; 
+    }
+    h2 {
+      text-align: center; /* Center the h2 element */
+    }
+    #result { 
+      margin-top: 16px; 
+    }
+    #analyze {
+      background-color: #4CAF50; /* Green background */
+      color: white; /* White text */
+      padding: 12px 24px; /* More padding */
+      border: none; /* Remove border */
+      border-radius: 4px; /* Rounded corners */
+      cursor: pointer; /* Pointer cursor on hover */
+      font-size: 16px; /* Larger font size */
+    }
+    #analyze:hover {
+      background-color: #45a049; /* Darker green on hover */
+    }
+  </style>
+</head>
+<body>
+  <h2>UI analyzer</h2>
+  <button id="analyze">Analyze Selected Frames</button>
+  <div id="result"></div>
+  <script>
+    // Function to send analyze frames message
+    const analyzeSelectedFrames = () => {
+      parent.postMessage({ pluginMessage: { type: 'analyze-frames' } }, '*');
+    };
+
+    // Run analyzer on launch
+    analyzeSelectedFrames();
+    
+    // Send a message to the plugin code when the button is clicked
+    document.getElementById('analyze').onclick = () => {
+      analyzeSelectedFrames();
+    };
+
+    // Receive and display the results
+    window.onmessage = event => {
+      const message = event.data.pluginMessage;
+      if (message.type === 'analysis-result') {
+        document.getElementById('result').innerText = 
+          `Screens: ${message.frames}\n Input Fields: ${message.inputs}\n Buttons: ${message.buttons}`;
+      }
+    };
+  </script>
+</body>
+</html>
